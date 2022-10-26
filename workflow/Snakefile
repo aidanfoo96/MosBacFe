@@ -1,0 +1,41 @@
+############## BGC Anaysis of Mosquito Associated Bacterial Genomes #############
+        # Author: Aidan Foo 
+        # Email 248064@lstmed.ac.uk 
+        # Version: 0.1 
+#################################################################################
+
+import pandas as pd
+
+configfile: "../config/config.yaml"
+
+sample_table = (
+    pd.read_csv(config["samples"], sep = "\t", dtype = {"sampleID": str})
+    .set_index(["sampleID"], drop = False)
+    .sort_index()
+)
+
+samples = sample_table["sampleID"].tolist()
+
+GoodGenomes_table = (
+    pd.read_csv("../results/genome_qa/winning_genomes_names.tsv", sep = "\t", dtype = {"sample": str})
+    .set_index(["sample"], drop = False)
+    .sort_index()
+)
+
+GoodGenomes = GoodGenomes_table["sample"].tolist()
+
+include: "rules/PipelineFunction.smk"
+include: "rules/QC.smk"
+include: "rules/Assembly.smk"
+include: "rules/AMR_search.smk"
+include: "rules/Genome_Classification_GTDB.smk"
+include: "rules/BGC_search.smk"
+include: "rules/fegenie.smk"
+include: "rules/TaxonomicClassification.smk"
+
+rule all:
+    """
+        Run the Pipeline
+    """
+    input:
+        RunPipeLine

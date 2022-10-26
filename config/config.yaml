@@ -1,0 +1,39 @@
+samples: ../config/fastq_samples.txt
+
+QC_Reads: 
+  Activate: True
+  CutadaptParams: "--minimum-length 50 -q 30"
+
+MegaHitAssm: 
+  Activate: False
+  Threads: 20
+  Memory: 0.5
+  MinContigLen: 1500
+
+AMRGeneFind: 
+  Activate: False
+
+GTDBTkClassification: 
+  Activate: False
+  Threads: 16
+
+AntiSmash: 
+  Activate: True
+  Threads: 15
+
+SPAdesAssm: 
+  Activate: True
+  Threads: 12
+  CheckmThreads: 12
+
+ShovillAssm: 
+  Activate: True
+  Threads: 20
+
+fegenie:
+  Activate: False
+  
+KrakenClassification: 
+  Activate: True
+  kraken_db_location: "/home/db/Kraken2_db/"
+  Threads: 20
