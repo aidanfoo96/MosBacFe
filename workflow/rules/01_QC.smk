@@ -23,7 +23,7 @@ rule do_fastqc:
     log: 
         "logs/fastqc/{sample}_{num}.log", 
     threads: 
-        20
+        5
     params: 
         outdir="--outdir ../results/qc/fastqc",
     wrapper: 
