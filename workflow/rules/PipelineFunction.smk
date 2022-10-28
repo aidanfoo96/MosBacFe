@@ -16,28 +16,6 @@ def RunPipeLine(wildcards):
                 num = [1, 2], 
             )
         )
-    
-    if config["MegaHitAssm"]["Activate"]: 
-        final_input.extend(
-            expand(
-                [
-                    "../results/megahit_assm/{sample}_assm/final.contigs.fa",
-                    "../results/binning/metabat_out/{sample}_bins/{sample}",
-                    "../results/binning/checkm_out/{sample}_checkm/lineage.ms",
-                ],
-                sample = samples,
-            )
-        )
-
-    if config["AMRGeneFind"]["Activate"]: 
-        final_input.extend(
-            expand(
-                [
-                    "../results/abricate_out/{sample}.tab",
-                ],
-                sample = samples,
-            )
-        )
 
     if config["GTDBTkClassification"]["Activate"]:
         final_input.extend(
@@ -64,12 +42,8 @@ def RunPipeLine(wildcards):
             expand(
                 [
                     "../results/spades/{sample}_spades_assm/contigs.fasta",
-                    "../results/genome_qa/{sample}_checkm/lineage.ms",
                     "../results/spades/{sample}_spades_assm/{sample}.fasta",
-                    "../results/genome_qa_summarised/checkm_qa/{sample}/{sample}_checkm_out.tsv",
                     "../results/genome_qa/1_concatenated_bin_stats.tsv",
-
-
                 ],
                 sample = samples,
             )
@@ -79,9 +53,12 @@ def RunPipeLine(wildcards):
         final_input.extend(
             expand(
                 [
-                    "../results/shovill/{sample}_shovill_assm/contigs.fa",
+                    "../results/shovill/{sample}_shovill_assm/{sample}.{assembler}.assembly.fa",
+                    "../results/genome_qa/{sample}_checkm/lineage.ms",
+                    "../results/genome_qa_summarised/checkm_qa/{sample}/{sample}_checkm_out.tsv",
                 ],
                 sample = samples,
+                assembler = "shovill",
             )
         )
 
@@ -102,7 +79,6 @@ def RunPipeLine(wildcards):
             expand(
                 [
                     "../results/kraken_classification_/{sample}_report.txt",
-
                 ],
                 sample = samples,
 
