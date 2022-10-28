@@ -1,8 +1,9 @@
-############## BGC Anaysis of Mosquito Associated Bacterial Genomes #############
+############## Iron Acquisition Potential of Mosquito Associated Bacteria #############
         # Author: Aidan Foo 
         # Email 248064@lstmed.ac.uk 
         # Version: 0.1 
-#################################################################################
+#######################################################################################
+
 
 import pandas as pd
 
@@ -16,22 +17,13 @@ sample_table = (
 
 samples = sample_table["sampleID"].tolist()
 
-GoodGenomes_table = (
-    pd.read_csv("../results/genome_qa/winning_genomes_names.tsv", sep = "\t", dtype = {"sample": str})
-    .set_index(["sample"], drop = False)
-    .sort_index()
-)
-
-GoodGenomes = GoodGenomes_table["sample"].tolist()
-
+include: "rules/01_QC.smk"
+include: "rules/02_Assembly.smk"
+include: "rules/03_TaxonomicClassification.smk"
+include: "rules/04_Genome_Classification_GTDB.smk"
+include: "rules/05_fegenie.smk"
+include: "rules/06_BGC_search.smk"
 include: "rules/PipelineFunction.smk"
-include: "rules/QC.smk"
-include: "rules/Assembly.smk"
-include: "rules/AMR_search.smk"
-include: "rules/Genome_Classification_GTDB.smk"
-include: "rules/BGC_search.smk"
-include: "rules/fegenie.smk"
-include: "rules/TaxonomicClassification.smk"
 
 rule all:
     """
