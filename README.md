@@ -1,2 +1,2 @@
 # MosBacBGC
-A snakemake pipeline to interrogate Biosynthetic Gene Clusters in Mosquito Associated Bacteria
+A snakemake pipeline to interrogate Iron Acquisition Potential of Mosquito Associated Bacteria
