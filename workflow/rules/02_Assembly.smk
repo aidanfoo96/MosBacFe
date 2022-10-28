@@ -1,3 +1,8 @@
+
+
+
+
+#-------------------------------------------------------------------#
 rule spades_assm:
     """
         Run a SPAdes assembly on trimmed fastq reads
@@ -18,26 +23,29 @@ rule spades_assm:
             -t {params.threads}
          """
 
+
+#-------------------------------------------------------------------#
 rule shovil_assm: 
     """
         Run assembly using shovill
     """
     output: 
-        assm = "../results/shovill/{sample}_shovill_assm/contigs.fa",
+        assm = "../results/shovill/{sample}_shovill_assm/{sample}.{assembler}.assembly.fa",
+        contigs = "../results/shovill/{sample}_shovill_assm/{sample}.{assembler}.contigs.fa",
     input: 
         read1 = "../results/qc/trimmed_fastq/{sample}_trimmed_1.fastq",
         read2 = "../results/qc/trimmed_fastq/{sample}_trimmed_2.fastq", 
     params:
-        threads = config["ShovillAssm"]["Threads"], 
-        outputdir = "../results/shovill/{sample}_shovill_assm/",
-    shell: 
-        r"""
-            shovill \
-            --outdir {params.outputdir} \
-            --R1 {input.read1} --R2 {input.read2} \
-            --cpus 12 --force
-         """
+        extra = ""
+    log: 
+        "logs/shovill/{sample}.{assembler}.log",
+    threads: 
+        threads = config["ShovillAssm"]["Threads"],
+    wrapper: 
+        "v1.18.0/bio/shovill"
 
+
+#-------------------------------------------------------------------#
 rule rename_contigs: 
     """
         Rename spades contigs from 'contigs.fasta' to something more meaningful
@@ -51,6 +59,8 @@ rule rename_contigs:
             cp {input.assm} {output.renamed_contigs}
          """
 
+
+#-------------------------------------------------------------------#
 rule checkM_genome: 
     """
         Check genome completeness and contamination
@@ -58,7 +68,7 @@ rule checkM_genome:
     output: 
         checkm_out = "../results/genome_qa/{sample}_checkm/lineage.ms",
     input: 
-        assm = "../results/spades/{sample}_spades_assm/{sample}.fasta",
+        assm = expand("../results/shovill/{sample}_shovill_assm/{sample}.{assembler}.assembly.fa", assembler = "shovill", sample = samples),
     params: 
         outdir = "../results/genome_qa/{sample}_checkm/",
         indir = "../results/spades/{sample}_spades_assm/",
@@ -71,6 +81,7 @@ rule checkM_genome:
          """
 
 
+#-------------------------------------------------------------------#
 rule QA_checkm:
     """
         Do QA from CheckM to generate a specific .tsv summary file
@@ -87,6 +98,8 @@ rule QA_checkm:
             {input.checkm_out} {params.direc}
          """
 
+
+#-------------------------------------------------------------------#
 rule concatenate_checkM:
     """
         Concatenate quality checked files from each genome 
@@ -103,6 +116,7 @@ rule concatenate_checkM:
          """
 
 
+#-------------------------------------------------------------------#
 rule filter_winning_bins: 
     """
         R script to make a tsv file of ''winning'' bins
