@@ -1,46 +1,40 @@
+def get_input1(wildcards): 
+    """
+        Function to acquire bacterial reads from resources directory
+    """
+    fastqID = pd.read_csv(config["input_config"]["samples_table"], sep = "\t", index_col = "sampleID")
+    
+    final = fastqID.loc[wildcards.sample, ["fastq1Path", "fastq2Path"]].dropna() 
 
+    return [f"{final.fastq1Path}"]
 
+def get_input2(wildcards): 
+    """
+        Function to acquire bacterial reads from resources directory
+    """
+    fastqID = pd.read_csv(config["input_config"]["samples_table"], sep = "\t", index_col = "sampleID")
+    
+    final = fastqID.loc[wildcards.sample, ["fastq1Path", "fastq2Path"]].dropna() 
 
+    return [f"{final.fastq2Path}"]
 
 #-------------------------------------------------------------------#
-rule spades_assm:
-    """
-        Run a SPAdes assembly on trimmed fastq reads
-    """
-    output: 
-        assm = "../results/spades/{sample}_spades_assm/contigs.fasta",
-    input: 
-        read1 = "../results/qc/trimmed_fastq/{sample}_trimmed_1.fastq",
-        read2 = "../results/qc/trimmed_fastq/{sample}_trimmed_2.fastq", 
-    params: 
-        threads = config["SPAdesAssm"]["Threads"], 
-        outputdir = "../results/spades/{sample}_spades_assm/",
-    shell: 
-        r"""
-            spades -1 {input.read1} \
-            -2 {input.read2} \
-            -o {params.outputdir} \
-            -t {params.threads}
-         """
-
-
-#-------------------------------------------------------------------#
-rule shovil_assm: 
+rule shovill_assm: 
     """
         Run assembly using shovill
     """
     output: 
-        assm = "../results/shovill/{sample}_shovill_assm/{sample}.{assembler}.assembly.fa",
+        raw_assembly = "../results/shovill/{sample}_shovill_assm/{sample}.{assembler}.assembly.fa",
         contigs = "../results/shovill/{sample}_shovill_assm/{sample}.{assembler}.contigs.fa",
     input: 
-        read1 = "../results/qc/trimmed_fastq/{sample}_trimmed_1.fastq",
-        read2 = "../results/qc/trimmed_fastq/{sample}_trimmed_2.fastq", 
+        r1 = get_input1,
+        r2 = get_input2, 
     params:
         extra = ""
     log: 
         "logs/shovill/{sample}.{assembler}.log",
     threads: 
-        threads = config["ShovillAssm"]["Threads"],
+        20
     wrapper: 
         "v1.18.0/bio/shovill"
 
@@ -68,16 +62,16 @@ rule checkM_genome:
     output: 
         checkm_out = "../results/genome_qa/{sample}_checkm/lineage.ms",
     input: 
-        assm = expand("../results/shovill/{sample}_shovill_assm/{sample}.{assembler}.assembly.fa", assembler = "shovill", sample = samples),
+        assm = expand("../results/shovill/{sample}_shovill_assm/{sample}.{assembler}.assembly.fa", assembler = "spades", sample = samples),
     params: 
         outdir = "../results/genome_qa/{sample}_checkm/",
-        indir = "../results/spades/{sample}_spades_assm/",
+        indir = "../results/shovill/{sample}_shovill_assm/",
         threads = config["SPAdesAssm"]["CheckmThreads"],
     shell: 
         r"""
             checkm lineage_wf -t {params.threads} \
             --pplacer_threads {params.threads} \
-            -x contigs.fasta {params.indir} {params.outdir} 
+            -x assembly.fa {params.indir} {params.outdir} 
          """
 
 
